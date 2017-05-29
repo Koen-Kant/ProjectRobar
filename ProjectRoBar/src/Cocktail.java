@@ -1,22 +1,26 @@
 public class Cocktail implements CTP 
 {
-	private String naam;
+	private String type;
 	private ReceptActie[] Recept;
 	private String Kleur;
 	
 	public Cocktail(String nnaam, ReceptActie[] nRecept, String nKleur)
 	{
 		Kleur = nKleur;
-		naam = nnaam;
+		type = nnaam;
 		Recept = nRecept;
 	}
 	@Override
-	public String GetName() {
-		return naam;
+	public String GetKleur() {
+		return Kleur;
 	}
 	@Override
 	public ReceptActie[] GetRecept() {
 		return Recept;
+	}
+	@Override
+	public String Type() {
+		return type;
 	}
 	
 

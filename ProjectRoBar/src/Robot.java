@@ -1,10 +1,16 @@
 import java.util.ArrayList;
 import java.util.Iterator;
+import com.pi4j.io.gpio.GpioController;
+import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.PinState;
+import com.pi4j.io.gpio.RaspiPin;
 
 public class Robot 
 {
 	//variabele
 	private String naam;
+	private Location HuLo;
 	//links
 	private ArrayList<Cocktail> Cocktails;  
 	private ArrayList<Sensor> Sensors;
@@ -30,7 +36,7 @@ public class Robot
 	//methodes
 	public void WachtTotGlas()
 	{
-		//While(noglass)
+		while(!((new SensorIterator()).SensorType("KleurenSensor").MeetIets()==0));
 	}
 	
 	public void VoegCocktailToe(String naam, ReceptActie[] Recept, String Kleur)
@@ -40,10 +46,10 @@ public class Robot
 	
 	public Cocktail LeesGlas()
 	{
-		//Leeskleur
+		//krijg een waarde van de kleurensensor
+		String Kleur = null;
 		//geeft out de waarde van 1 van de cocktails die aan de kleur gelinkt is
-		ReceptActie[] RA= new ReceptActie[4]; //placehloder
-		Cocktail out = new Cocktail("WIP", RA, "WIT");
+		Cocktail out = (new CocktailIterator()).CocktialType(Kleur);
 		return out;
 	}
 	
@@ -95,13 +101,16 @@ public class Robot
 		switch(Condiment)
 		{
 		case CONDIMENT1:
-			//pomp 1
+			ToPossision(Location.START);
+			//pomp 1 WIP
 			break;
 		case CONDIMENT2:
-			//pomp 2
+			ToPossision(Location.START);
+			//pomp 2 WIP
 			break;
 		case CONDIMENT3:
-			//pomp 3 
+			ToPossision(Location.START);
+			//pomp 3 WIP
 			break;
 		default:
 			break;
@@ -113,28 +122,28 @@ public class Robot
 		switch(Fles)
 		{
 		case BOTTLE1:
-			//Goto(Fless1)
-			//GetDrank
+			ToPossision(Location.FLES1);
+			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
 			break;
 		case BOTTLE2:
-			//Goto(Fless2)
-			//GetDrank
+			ToPossision(Location.FLES2);
+			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
 			break;
 		case BOTTLE3:
-			//Goto(Fless3)
-			//GetDrank
+			ToPossision(Location.FLES3);
+			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
 			break;
 		case BOTTLE4:
-			//Goto(Fless4)
-			//GetDrank
+			ToPossision(Location.FLES4);
+			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
 			break;
 		case BOTTLE5:
-			//Goto(Fless5)
-			//GetDrank
+			ToPossision(Location.FLES5);
+			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
 			break;
 		case BOTTLE6:
-			//Goto(Fless6)
-			//GetDrank
+			ToPossision(Location.FLES6);
+			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
 			break;
 		default:
 			break;
@@ -143,7 +152,11 @@ public class Robot
 	
 	private void Stirr()
 	{
-		//DoStirr
+		for(int i=0;i<5;i++)
+		{
+		ToPossision(Location.START);
+		ToPossision(Location.FLES5);
+		}
 	}
 	
 	private void Pomp(ReceptActie Drank)
@@ -151,16 +164,16 @@ public class Robot
 		switch(Drank)
 		{
 		case PUMP1:
-			//pomp 1
+			(new ActuatorIterator()).ActuatorType("Pomp1").DoeIets();
 			break;
 		case PUMP2:
-			//pomp 2
+			(new ActuatorIterator()).ActuatorType("Pomp2").DoeIets();
 			break;
 		case PUMP3:
-			//pomp 3 
+			(new ActuatorIterator()).ActuatorType("Pomp3").DoeIets();
 			break;
 		case PUMP4:
-			//pomp 4
+			(new ActuatorIterator()).ActuatorType("Pomp4").DoeIets();
 			break;
 		default:
 			break;
@@ -169,76 +182,142 @@ public class Robot
 	
 	private void Clean()
 	{
-		//DoClean
+		ToPossision(Location.FRIS);
+		(new ActuatorIterator()).ActuatorType("Pomp4").DoeIets();
+		Stirr();
 	}
 	
 	private void ReturnCocktail()
 	{
-		//DoReturnCoctail
+		ToPossision(Location.START);
+		(new ActuatorIterator()).ActuatorType("Kieper").DoeIets();
 	}
 	
+	private void ToPossision(Location Place) 
+	{
+		if(Place.ordinal() > HuLo.ordinal() && Place.ordinal() < HuLo.ordinal()+5)
+		{
+			(new ActuatorIterator()).ActuatorType("Draaiwiel").DoeIets(); //CCW
+		}
+		else 
+		{
+			if(HuLo.ordinal() == 8 && (Place.ordinal()>= 0&&Place.ordinal() <5)||HuLo.ordinal() == 7 && (Place.ordinal()>= 0&&Place.ordinal() <4)||HuLo.ordinal()==6 &&(Place.ordinal()>=0 && Place.ordinal()<3)||HuLo.ordinal()==5&&(Place.ordinal()==0&&Place.ordinal()==1)||HuLo.ordinal()==4&&Place.ordinal()==0)
+					{
+				(new ActuatorIterator()).ActuatorType("Draaiwiel").DoeIets(); //CCW
+					}
+			else
+			{
+				(new ActuatorIterator()).ActuatorType("Draaiwiel").DoeIets(); //CCW
+			}
+		}
+			
+	}
+
 	public class CocktailIterator implements Iterator
 	{
+		private int i;
+		private Cocktail Hold;
+		
+		public CocktailIterator()
+		{
+			i = 0;
+			Hold = null;
+		}
+		
 		@Override
 		public boolean hasNext() {
-			//if next? T/F
-			return false;
+			if(Cocktails.size() < i)
+			{return true;}
+			else
+			{return false;}
 		}
 		@Override
 		public Cocktail next() 
 		{
-			//next coctail
-			return null;
+			return Cocktails.get(i++);
 		}	
 		
-		public Cocktail CocktialType(String type)
+		public Cocktail CocktialType(String Kleur)
 		{
-			//find coctail with type
-			//return cocktil/null
+			while(CocktailIterator.this.hasNext())
+			{
+				Hold = CocktailIterator.this.next();
+				if(Hold.GetKleur()==Kleur)
+				{return Hold;}
+			}
 			return null;
 		}
 	}
 	
 	public class ActuatorIterator implements Iterator
 	{
+		private int i;
+		private Actuator Hold;
+		
+		public ActuatorIterator()
+		{
+			i = 0;
+			Hold = null;
+		}
+		
 		@Override
 		public boolean hasNext() {
-			//if next? T/F
-			return false;
+			if(Actuators.size() < i)
+			{return true;}
+			else
+			{return false;}
 		}
 
 		@Override
 		public Actuator next() {
-			//next Actuator
-			return null;
+			return Actuators.get(i++);
 		}
 		
 		public Actuator ActuatorType(String type)
 		{
-			//find Actuator with type
-			//return Actuator/null
+			while(ActuatorIterator.this.hasNext())
+			{
+				Hold = ActuatorIterator.this.next();
+				if(Hold.GetType()==type)
+				{return Hold;}
+			}
 			return null;
 		}
 	}
 	
 	public class SensorIterator implements Iterator
 	{
+		private int i;
+		private Sensor Hold;
+		
+		public SensorIterator()
+		{
+			i = 0;
+			Hold = null;
+		}
+		
 		@Override
 		public boolean hasNext() {
-			//if next? T/F
-			return false;
+			if(Sensors.size() < i)
+			{return true;}
+			else
+			{return false;}
 		}
 
 		@Override
-		public Object next() {
-			//next Actuator
-			return null;
+		public Sensor next() 
+		{
+			return Sensors.get(i++);
 		}
 		
 		public Sensor SensorType(String type)
 		{
-			//find Sensor with type
-			//return Sensor/null
+			while(SensorIterator.this.hasNext())
+			{
+				Hold = SensorIterator.this.next();
+				if(Hold.GetType()==type)
+				{return Hold;}
+			}
 			return null;
 		}
 	}
