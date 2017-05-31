@@ -1,6 +1,6 @@
 public interface Act 
 {
-	public int DoeIets();
+	public void DoeIets();
 	public int GetStatus();
 	public String GetType();
 }

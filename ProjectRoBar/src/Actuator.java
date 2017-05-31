@@ -8,9 +8,8 @@ public class Actuator implements Act
 	}
 	
 	@Override
-	public int DoeIets() {
+	public void DoeIets() {
 		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	@Override

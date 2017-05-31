@@ -13,30 +13,51 @@ public class Robot
 	private Location HuLo;
 	//links
 	private ArrayList<Cocktail> Cocktails;  
-	private ArrayList<Sensor> Sensors;
-	private ArrayList<Actuator> Actuators;
+	//private ArrayList<Sensor> Sensors;
+	//private ArrayList<Actuator> Actuators;
+	private LichtSluis LS;
+	private KleurSen KS;
+	
+	private Pomp P1;
+	private Pomp P2;
+	private Pomp P3;
+	private Pomp P4;
+	private Pomp P5;
+	private MotorWiel MW;
+	private LinAct LA;
+	private MotorKiep MK;
 	//constructor
 	public Robot(String nnaam)
 	{
 		naam = nnaam;
 		Cocktails = new ArrayList<Cocktail>();
-		Sensors = new ArrayList<Sensor>();
-		Sensors.add(new Sensor("LichtSluisje"));
-		Sensors.add(new Sensor("KleurenSensor"));
-		Actuators = new ArrayList<Actuator>();
-		Actuators.add(new Actuator("Pomp1"));
-		Actuators.add(new Actuator("Pomp2"));
-		Actuators.add(new Actuator("Pomp3"));
-		Actuators.add(new Actuator("Pomp4"));
-		Actuators.add(new Actuator("Pomp5"));
-		Actuators.add(new Actuator("Draaiwiel"));
-		Actuators.add(new Actuator("LinAct"));
-		Actuators.add(new Actuator("Kieper"));
+		//Sensors = new ArrayList<Sensor>();
+		//Sensors.add(new LichtSluis("LichtSluisje"));
+		//Sensors.add(new KleurSen("KleurenSensor"));
+		LS = new LichtSluis("LichtSluis");
+		KS = new KleurSen("KleurSen");
+		//Actuators = new ArrayList<Actuator>();
+		//Actuators.add(new Pomp("Pomp1",1));
+		//Actuators.add(new Pomp("Pomp2",2));
+		//Actuators.add(new Pomp("Pomp3",3));
+		//Actuators.add(new Pomp("Pomp4",4));
+		//Actuators.add(new Pomp("Pomp5",5));
+		//Actuators.add(new MotorWiel("Draaiwiel"));
+		//Actuators.add(new LinAct("LinAct"));
+		//Actuators.add(new MotorKiep("Kieper"));
+		P1 = new Pomp("Pomp1", 1);
+		P2 = new Pomp("Pomp2", 2);
+		P3 = new Pomp("Pomp3", 3);
+		P4 = new Pomp("Pomp4", 4);
+		P5 = new Pomp("Pomp5", 5);
+		MW = new MotorWiel("Draaiwiel");
+		LA = new LinAct("LinAct");
+		MK = new MotorKiep("Kieper");
 	}
 	//methodes
 	public void WachtTotGlas()
 	{
-		while(!((new SensorIterator()).SensorType("KleurenSensor").MeetIets()==0));
+		while(!KS.ValData());
 	}
 	
 	public void VoegCocktailToe(String naam, ReceptActie[] Recept, String Kleur)
@@ -102,48 +123,49 @@ public class Robot
 		{
 		case CONDIMENT1:
 			ToPossision(Location.START);
-			//pomp 1 WIP
+			LA.Druk();
 			break;
 		case CONDIMENT2:
 			ToPossision(Location.START);
-			//pomp 2 WIP
+			LA.Druk();
 			break;
 		case CONDIMENT3:
 			ToPossision(Location.START);
-			//pomp 3 WIP
+			LA.Druk();
 			break;
 		default:
 			break;
 		}
 
 	}
+	
 	private void Fles(ReceptActie Fles)
 	{
 		switch(Fles)
 		{
 		case BOTTLE1:
 			ToPossision(Location.FLES1);
-			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
+			LA.Druk();
 			break;
 		case BOTTLE2:
 			ToPossision(Location.FLES2);
-			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
+			LA.Druk();
 			break;
 		case BOTTLE3:
 			ToPossision(Location.FLES3);
-			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
+			LA.Druk();
 			break;
 		case BOTTLE4:
 			ToPossision(Location.FLES4);
-			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
+			LA.Druk();
 			break;
 		case BOTTLE5:
 			ToPossision(Location.FLES5);
-			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
+			LA.Druk();
 			break;
 		case BOTTLE6:
 			ToPossision(Location.FLES6);
-			(new ActuatorIterator()).ActuatorType("LinAct").DoeIets();
+			LA.Druk();
 			break;
 		default:
 			break;
@@ -164,16 +186,16 @@ public class Robot
 		switch(Drank)
 		{
 		case PUMP1:
-			(new ActuatorIterator()).ActuatorType("Pomp1").DoeIets();
+			P1.Pomp();
 			break;
 		case PUMP2:
-			(new ActuatorIterator()).ActuatorType("Pomp2").DoeIets();
+			P2.Pomp();
 			break;
 		case PUMP3:
-			(new ActuatorIterator()).ActuatorType("Pomp3").DoeIets();
+			P3.Pomp();
 			break;
 		case PUMP4:
-			(new ActuatorIterator()).ActuatorType("Pomp4").DoeIets();
+			P4.Pomp();
 			break;
 		default:
 			break;
@@ -183,34 +205,46 @@ public class Robot
 	private void Clean()
 	{
 		ToPossision(Location.FRIS);
-		(new ActuatorIterator()).ActuatorType("Pomp4").DoeIets();
+		P5.Pomp();
 		Stirr();
+		ToPossision(Location.FRIS);
+		MK.Kiep();
 	}
 	
 	private void ReturnCocktail()
 	{
 		ToPossision(Location.START);
-		(new ActuatorIterator()).ActuatorType("Kieper").DoeIets();
+		MK.Kiep();
 	}
 	
 	private void ToPossision(Location Place) 
 	{
 		if(Place.ordinal() > HuLo.ordinal() && Place.ordinal() < HuLo.ordinal()+5)
 		{
-			(new ActuatorIterator()).ActuatorType("Draaiwiel").DoeIets(); //CCW
+			MW.ZetRichting("CW");
+			MW.GaToggle();
+			LS.Verder(HuLo.ordinal()-Place.ordinal());
+			MW.GaToggle();
 		}
 		else 
 		{
-			if(HuLo.ordinal() == 8 && (Place.ordinal()>= 0&&Place.ordinal() <5)||HuLo.ordinal() == 7 && (Place.ordinal()>= 0&&Place.ordinal() <4)||HuLo.ordinal()==6 &&(Place.ordinal()>=0 && Place.ordinal()<3)||HuLo.ordinal()==5&&(Place.ordinal()==0&&Place.ordinal()==1)||HuLo.ordinal()==4&&Place.ordinal()==0)
-					{
-				(new ActuatorIterator()).ActuatorType("Draaiwiel").DoeIets(); //CCW
-					}
+			if(HuLo.ordinal() == 7 && (Place.ordinal()>= 0&&Place.ordinal() <4)||HuLo.ordinal()==6 &&(Place.ordinal()>=0 && Place.ordinal()<3)||HuLo.ordinal()==5&&(Place.ordinal()==0&&Place.ordinal()==1)||HuLo.ordinal()==4&&Place.ordinal()==0)
+			{
+				MW.ZetRichting("CCW");
+				MW.GaToggle();
+				LS.Verder(HuLo.ordinal()-Place.ordinal());
+				MW.GaToggle();
+			}
+			
 			else
 			{
-				(new ActuatorIterator()).ActuatorType("Draaiwiel").DoeIets(); //CCW
+				MW.ZetRichting("CCW");
+				MW.GaToggle();
+				LS.Verder(HuLo.ordinal()-Place.ordinal());
+				MW.GaToggle();
 			}
 		}
-			
+		HuLo = Place;	
 	}
 
 	public class CocktailIterator implements Iterator
@@ -249,7 +283,7 @@ public class Robot
 		}
 	}
 	
-	public class ActuatorIterator implements Iterator
+/*	public class ActuatorIterator implements Iterator
 	{
 		private int i;
 		private Actuator Hold;
@@ -320,7 +354,7 @@ public class Robot
 			}
 			return null;
 		}
-	}
+	}*/
 }
 
 
