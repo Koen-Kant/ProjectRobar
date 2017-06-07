@@ -1,23 +1,38 @@
-public class KleurSen extends Sensor 
+import com.pi4j.io.gpio.GpioPinAnalogInput;
+
+public class KleurSen 
 {
-	//private pin Pout;
-	private int out;
+	private double Meet;
+	private double Out;
+	private GpioPinAnalogInput Pout;
 	
-	public KleurSen(String type) {
-		super(type);
-		out = 0;
+	public KleurSen(GpioPinAnalogInput nPout) 
+	{
+		Pout = nPout;
+		Meet = 100;
+		Out = 100;
 	}
 	
-	public int MeetKleur()
+	public String MeetKleur()
 	{
-		//krijg waarde van pin
-		return out;
+		Out = Pout.getValue();
+		if(Out == 0)
+		{return "Zwart";}
+		else if(Out == 50)
+		{return "Grijs";}
+		else
+		{return "Wit";}
+		
 	}
 	
 	public boolean ValData()
 	{
-		//if(Pout == BOggus)
-		return true;
+		Meet = Pout.getValue();
+		try {Thread.sleep(100);} catch (InterruptedException e) {e.printStackTrace();}
+		if(Meet == Pout.getValue())
+		{return true;}
+		else
+		{return false;}
 	}
 
 }

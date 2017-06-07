@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.gpio.GpioPinAnalogInput;
+import com.pi4j.io.gpio.GpioPinDigitalInput;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
@@ -13,8 +15,6 @@ public class Robot
 	private Location HuLo;
 	//links
 	private ArrayList<Cocktail> Cocktails;  
-	//private ArrayList<Sensor> Sensors;
-	//private ArrayList<Actuator> Actuators;
 	private LichtSluis LS;
 	private KleurSen KS;
 	
@@ -26,33 +26,60 @@ public class Robot
 	private MotorWiel MW;
 	private LinAct LA;
 	private MotorKiep MK;
+	
+	final GpioController gpio;
+	//private GpioPinDigitalOutput SDA = null;
+	//private GpioPinDigitalOutput SCL = null;
+	//private GpioPinDigitalOutput TXD = null;
+	//private GpioPinDigitalOutput RX0 = null;
+	private GpioPinDigitalOutput n04;
+	private GpioPinDigitalOutput n17;
+	private GpioPinDigitalOutput n18;
+	private GpioPinDigitalOutput n27;
+	private GpioPinDigitalOutput n22;
+	private GpioPinDigitalInput n23;
+	private GpioPinAnalogInput n24;
+	private GpioPinDigitalOutput n25;
+	//private GpioPinDigitalOutput MOSI = null;
+	//private GpioPinDigitalOutput CLK = null;
+	//private GpioPinDigitalOutput CE0 = null;
+	//private GpioPinDigitalOutput CE1 = null;
+	private GpioPinDigitalOutput n05; 
+	private GpioPinDigitalOutput n06;
+	//private GpioPinDigitalOutput n12 = null;
+	//private GpioPinDigitalOutput n13 = null;
+	//private GpioPinDigitalOutput n16 = null;
+	//private GpioPinDigitalOutput n19 = null;
+	//private GpioPinDigitalOutput n20 = null;
+	
 	//constructor
 	public Robot(String nnaam)
 	{
 		naam = nnaam;
+		gpio = GpioFactory.getInstance();
+		n04 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, "Pomp1", PinState.LOW);
+		n17 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_17, "Pomp2", PinState.LOW);
+		n18 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_18, "Pomp3", PinState.LOW);
+		n27 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "Pomp4", PinState.LOW);
+		n22 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_22, "Pomp5", PinState.LOW);
+		n25 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_23, "Kiep", PinState.LOW);
+		n05 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05, "LiAc", PinState.LOW);
+		n06 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_06, "Wiel", PinState.LOW);
+		n23 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_23, "LS");
+		n24 = gpio.provisionAnalogInputPin(RaspiPin.GPIO_24, "CS");
+		
 		Cocktails = new ArrayList<Cocktail>();
-		//Sensors = new ArrayList<Sensor>();
-		//Sensors.add(new LichtSluis("LichtSluisje"));
-		//Sensors.add(new KleurSen("KleurenSensor"));
-		LS = new LichtSluis("LichtSluis");
-		KS = new KleurSen("KleurSen");
-		//Actuators = new ArrayList<Actuator>();
-		//Actuators.add(new Pomp("Pomp1",1));
-		//Actuators.add(new Pomp("Pomp2",2));
-		//Actuators.add(new Pomp("Pomp3",3));
-		//Actuators.add(new Pomp("Pomp4",4));
-		//Actuators.add(new Pomp("Pomp5",5));
-		//Actuators.add(new MotorWiel("Draaiwiel"));
-		//Actuators.add(new LinAct("LinAct"));
-		//Actuators.add(new MotorKiep("Kieper"));
-		P1 = new Pomp("Pomp1", 1);
-		P2 = new Pomp("Pomp2", 2);
-		P3 = new Pomp("Pomp3", 3);
-		P4 = new Pomp("Pomp4", 4);
-		P5 = new Pomp("Pomp5", 5);
-		MW = new MotorWiel("Draaiwiel");
-		LA = new LinAct("LinAct");
-		MK = new MotorKiep("Kieper");
+		
+		LS = new LichtSluis(n23);
+		KS = new KleurSen(n24);
+		P1 = new Pomp(n04);
+		P2 = new Pomp(n17);
+		P3 = new Pomp(n18);
+		P4 = new Pomp(n27);
+		P5 = new Pomp(n22);
+		MW = new MotorWiel(n06);
+		LA = new LinAct(n05);
+		MK = new MotorKiep(n25);
 	}
 	//methodes
 	public void WachtTotGlas()
@@ -67,9 +94,8 @@ public class Robot
 	
 	public Cocktail LeesGlas()
 	{
-		//krijg een waarde van de kleurensensor
 		String Kleur = null;
-		//geeft out de waarde van 1 van de cocktails die aan de kleur gelinkt is
+		Kleur = KS.MeetKleur();
 		Cocktail out = (new CocktailIterator()).CocktialType(Kleur);
 		return out;
 	}
@@ -186,16 +212,16 @@ public class Robot
 		switch(Drank)
 		{
 		case PUMP1:
-			P1.Pomp();
+			P1.PompVloeistof();
 			break;
 		case PUMP2:
-			P2.Pomp();
+			P2.PompVloeistof();
 			break;
 		case PUMP3:
-			P3.Pomp();
+			P3.PompVloeistof();
 			break;
 		case PUMP4:
-			P4.Pomp();
+			P4.PompVloeistof();
 			break;
 		default:
 			break;
@@ -205,7 +231,7 @@ public class Robot
 	private void Clean()
 	{
 		ToPossision(Location.FRIS);
-		P5.Pomp();
+		P5.PompVloeistof();
 		Stirr();
 		ToPossision(Location.FRIS);
 		MK.Kiep();
@@ -282,79 +308,6 @@ public class Robot
 			return null;
 		}
 	}
-	
-/*	public class ActuatorIterator implements Iterator
-	{
-		private int i;
-		private Actuator Hold;
-		
-		public ActuatorIterator()
-		{
-			i = 0;
-			Hold = null;
-		}
-		
-		@Override
-		public boolean hasNext() {
-			if(Actuators.size() < i)
-			{return true;}
-			else
-			{return false;}
-		}
-
-		@Override
-		public Actuator next() {
-			return Actuators.get(i++);
-		}
-		
-		public Actuator ActuatorType(String type)
-		{
-			while(ActuatorIterator.this.hasNext())
-			{
-				Hold = ActuatorIterator.this.next();
-				if(Hold.GetType()==type)
-				{return Hold;}
-			}
-			return null;
-		}
-	}
-	
-	public class SensorIterator implements Iterator
-	{
-		private int i;
-		private Sensor Hold;
-		
-		public SensorIterator()
-		{
-			i = 0;
-			Hold = null;
-		}
-		
-		@Override
-		public boolean hasNext() {
-			if(Sensors.size() < i)
-			{return true;}
-			else
-			{return false;}
-		}
-
-		@Override
-		public Sensor next() 
-		{
-			return Sensors.get(i++);
-		}
-		
-		public Sensor SensorType(String type)
-		{
-			while(SensorIterator.this.hasNext())
-			{
-				Hold = SensorIterator.this.next();
-				if(Hold.GetType()==type)
-				{return Hold;}
-			}
-			return null;
-		}
-	}*/
 }
 
 

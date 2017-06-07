@@ -1,23 +1,21 @@
-public class LinAct extends Actuator 
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
+
+public class LinAct 
 {
-	//private pin Pout;
+	private GpioPinDigitalOutput Pout;
 	
-	public LinAct(String type) {
-		super(type);
-		// TODO Auto-generated constructor stub
-		//Pout = Pin[LinAct]
+	public LinAct(GpioPinDigitalOutput nPout) {
+		Pout = nPout;
 	}
 	
 	public void Druk()
 	{
-		//Pout = true;
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//Pout = false;
+		Pout.toggle();
+
+		//TODO
+		//wait
+		
+		Pout.toggle();
 	}
 
 }

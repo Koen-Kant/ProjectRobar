@@ -1,13 +1,12 @@
-public class MotorWiel extends Actuator 
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
+
+public class MotorWiel 
 {
-	private int ID;
-	//private pin Pout;
+	private GpioPinDigitalOutput Pout;
 	private String Richting;
 	
-	public MotorWiel(String type) {
-		super(type);
-		// TODO Auto-generated constructor stub
-		//Pout = pin[Wiel]
+	public MotorWiel(GpioPinDigitalOutput nPout) {
+		Pout = nPout;
 		Richting = "CW";
 	}
 	
@@ -25,14 +24,14 @@ public class MotorWiel extends Actuator
 	
 	public void GaToggle()
 	{
-		//if(Pout==false)
-		//{
-		//	Pout = true;
-		//}
+		if(Pout.isHigh())
+		{
+			Pout.toggle();
+		}
 		
-		//else if(Pout==true)
-		//{
-		//	Pout = false;
-		//}
+		else if(Pout.isLow())
+		{
+			Pout.toggle();
+		}
 	}
 }
