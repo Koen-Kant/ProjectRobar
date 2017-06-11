@@ -1,25 +1,40 @@
 import com.pi4j.io.gpio.GpioPinDigitalInput;
 
-public class LichtSluis
+public class LichtSluis implements Runnable
 {
-	private int i;
 	private GpioPinDigitalInput Pout;
+	private int LocGo;
 	
 	public LichtSluis(GpioPinDigitalInput nPout) 
 	{
 		Pout = nPout;
-		i =0;
+		LocGo = 0;
 	}
 	
-	public boolean Verder(int LocatiesVerder)
+	public void Verder(int LocatiesVerder)
 	{
-		for(i = 0; i<LocatiesVerder; i++)
+		LocGo = LocatiesVerder;
+	}
+	
+	public boolean hasArrived()
+	{
+		return LocGo == 0;
+	}
+
+	@Override
+	public void run() 
+	{
+		while(true)
 		{
-			while(Pout.isLow());
-			try {Thread.sleep(500);} 
-			catch (InterruptedException e) {e.printStackTrace();}
+			if(LocGo > 0)
+			{
+				while(Pout.isLow());
+				try {Thread.sleep(500);} 
+				catch (InterruptedException e) {e.printStackTrace();}
+				LocGo--;
+			}
 		}
-		return true;
+		
 	}
 
 }

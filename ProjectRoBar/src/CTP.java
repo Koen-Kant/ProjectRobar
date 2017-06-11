@@ -1,6 +1,6 @@
 public interface CTP 
 {
-	public String GetKleur();
+	public Kleur GetKleur();
 	public String Type();
 	public ReceptActie[] GetRecept();
 }

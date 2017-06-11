@@ -10,8 +10,6 @@ import com.pi4j.io.gpio.RaspiPin;
 
 public class Robot 
 {
-	//variabele
-	private String naam;
 	private Location HuLo;
 	//links
 	private ArrayList<Cocktail> Cocktails;  
@@ -27,11 +25,29 @@ public class Robot
 	private LinAct LA;
 	private MotorKiep MK;
 	
+	@SuppressWarnings("unused")
+	private Thread P1T;
+	@SuppressWarnings("unused")
+	private Thread P2T;
+	@SuppressWarnings("unused")
+	private Thread P3T;
+	@SuppressWarnings("unused")
+	private Thread P4T;
+	@SuppressWarnings("unused")
+	private Thread P5T;
+	@SuppressWarnings("unused")
+	private Thread MWT;
+	@SuppressWarnings("unused")
+	private Thread LAT;
+	@SuppressWarnings("unused")
+	private Thread MKT;
+	@SuppressWarnings("unused")
+	private Thread LST;
+	@SuppressWarnings("unused")
+	private Thread KST;
+	
 	final GpioController gpio;
-	//private GpioPinDigitalOutput SDA = null;
-	//private GpioPinDigitalOutput SCL = null;
-	//private GpioPinDigitalOutput TXD = null;
-	//private GpioPinDigitalOutput RX0 = null;
+
 	private GpioPinDigitalOutput n04;
 	private GpioPinDigitalOutput n17;
 	private GpioPinDigitalOutput n18;
@@ -39,62 +55,72 @@ public class Robot
 	private GpioPinDigitalOutput n22;
 	private GpioPinDigitalInput n23;
 	private GpioPinAnalogInput n24;
-	private GpioPinDigitalOutput n25;
-	//private GpioPinDigitalOutput MOSI = null;
-	//private GpioPinDigitalOutput CLK = null;
-	//private GpioPinDigitalOutput CE0 = null;
-	//private GpioPinDigitalOutput CE1 = null;
 	private GpioPinDigitalOutput n05; 
-	private GpioPinDigitalOutput n06;
-	//private GpioPinDigitalOutput n12 = null;
-	//private GpioPinDigitalOutput n13 = null;
-	//private GpioPinDigitalOutput n16 = null;
-	//private GpioPinDigitalOutput n19 = null;
-	//private GpioPinDigitalOutput n20 = null;
-	
+	private GpioPinDigitalOutput n25; 
+	private GpioPinDigitalOutput n06; 
+	private GpioPinDigitalOutput n12; 
+	private GpioPinDigitalOutput n13; 
+
 	//constructor
 	public Robot(String nnaam)
 	{
-		naam = nnaam;
 		gpio = GpioFactory.getInstance();
 		n04 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, "Pomp1", PinState.LOW);
 		n17 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_17, "Pomp2", PinState.LOW);
 		n18 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_18, "Pomp3", PinState.LOW);
 		n27 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "Pomp4", PinState.LOW);
 		n22 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_22, "Pomp5", PinState.LOW);
-		n25 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_23, "Kiep", PinState.LOW);
 		n05 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05, "LiAc", PinState.LOW);
-		n06 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_06, "Wiel", PinState.LOW);
+		n25 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_25, "WielA", PinState.LOW);
+		n06 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_06, "WielB", PinState.LOW);
+		n12 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_12, "KiepA", PinState.LOW);
+		n13 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_13, "KiepB", PinState.LOW);
 		n23 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_23, "LS");
 		n24 = gpio.provisionAnalogInputPin(RaspiPin.GPIO_24, "CS");
 		
 		Cocktails = new ArrayList<Cocktail>();
 		
-		LS = new LichtSluis(n23);
-		KS = new KleurSen(n24);
 		P1 = new Pomp(n04);
 		P2 = new Pomp(n17);
 		P3 = new Pomp(n18);
 		P4 = new Pomp(n27);
 		P5 = new Pomp(n22);
-		MW = new MotorWiel(n06);
-		LA = new LinAct(n05);
-		MK = new MotorKiep(n25);
+
+		LS = new LichtSluis(n23);
+		KS = new KleurSen(n24);
+		
+		MW = new MotorWiel(n05, n06);
+		LA = new LinAct(n25);
+		MK = new MotorKiep(n12, n13);
+		
+		(P1T = new Thread(P1)).start();
+		(P2T = new Thread(P2)).start();
+		(P3T = new Thread(P3)).start();
+		(P4T = new Thread(P4)).start();
+		(P5T = new Thread(P5)).start();
+		(MWT = new Thread(MW)).start();
+		(LAT = new Thread(LA)).start();
+		(MKT = new Thread(MK)).start();
+		(LST = new Thread(LS)).start();
+		(KST = new Thread(KS)).start();
+		
+		this.VoegCocktailToe(null, null, null);
 	}
+	
 	//methodes
 	public void WachtTotGlas()
 	{
 		while(!KS.ValData());
 	}
 	
-	public void VoegCocktailToe(String naam, ReceptActie[] Recept, String Kleur)
+	public void VoegCocktailToe(String naam, ReceptActie[] Recept, Kleur Kleur)
 	{
 		Cocktails.add(new Cocktail(naam, Recept, Kleur));
 	}
 	
 	public Cocktail LeesGlas()
 	{
-		String Kleur = null;
+		Kleur Kleur = null;
 		Kleur = KS.MeetKleur();
 		Cocktail out = (new CocktailIterator()).CocktialType(Kleur);
 		return out;
@@ -150,14 +176,17 @@ public class Robot
 		case CONDIMENT1:
 			ToPossision(Location.START);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		case CONDIMENT2:
 			ToPossision(Location.START);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		case CONDIMENT3:
 			ToPossision(Location.START);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		default:
 			break;
@@ -172,26 +201,32 @@ public class Robot
 		case BOTTLE1:
 			ToPossision(Location.FLES1);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		case BOTTLE2:
 			ToPossision(Location.FLES2);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		case BOTTLE3:
 			ToPossision(Location.FLES3);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		case BOTTLE4:
 			ToPossision(Location.FLES4);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		case BOTTLE5:
 			ToPossision(Location.FLES5);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		case BOTTLE6:
 			ToPossision(Location.FLES6);
 			LA.Druk();
+			while(LA.complete());
 			break;
 		default:
 			break;
@@ -213,15 +248,19 @@ public class Robot
 		{
 		case PUMP1:
 			P1.PompVloeistof();
+			while(P1.Completed());
 			break;
 		case PUMP2:
 			P2.PompVloeistof();
+			while(P2.Completed());
 			break;
 		case PUMP3:
 			P3.PompVloeistof();
+			while(P3.Completed());
 			break;
 		case PUMP4:
 			P4.PompVloeistof();
+			while(P4.Completed());
 			break;
 		default:
 			break;
@@ -232,9 +271,11 @@ public class Robot
 	{
 		ToPossision(Location.FRIS);
 		P5.PompVloeistof();
+		while(P5.Completed());
 		Stirr();
 		ToPossision(Location.FRIS);
 		MK.Kiep();
+		MK.Completed();
 	}
 	
 	private void ReturnCocktail()
@@ -250,7 +291,6 @@ public class Robot
 			MW.ZetRichting("CW");
 			MW.GaToggle();
 			LS.Verder(HuLo.ordinal()-Place.ordinal());
-			MW.GaToggle();
 		}
 		else 
 		{
@@ -259,7 +299,6 @@ public class Robot
 				MW.ZetRichting("CCW");
 				MW.GaToggle();
 				LS.Verder(HuLo.ordinal()-Place.ordinal());
-				MW.GaToggle();
 			}
 			
 			else
@@ -267,13 +306,14 @@ public class Robot
 				MW.ZetRichting("CCW");
 				MW.GaToggle();
 				LS.Verder(HuLo.ordinal()-Place.ordinal());
-				MW.GaToggle();
 			}
 		}
-		HuLo = Place;	
+		HuLo = Place;
+		while(LS.hasArrived());
+		MW.GaToggle();
 	}
 
-	public class CocktailIterator implements Iterator
+	public class CocktailIterator implements Iterator<Object>
 	{
 		private int i;
 		private Cocktail Hold;
@@ -297,12 +337,12 @@ public class Robot
 			return Cocktails.get(i++);
 		}	
 		
-		public Cocktail CocktialType(String Kleur)
+		public Cocktail CocktialType(Kleur kleur)
 		{
 			while(CocktailIterator.this.hasNext())
 			{
 				Hold = CocktailIterator.this.next();
-				if(Hold.GetKleur()==Kleur)
+				if(Hold.GetKleur()==kleur)
 				{return Hold;}
 			}
 			return null;
